@@ -39,5 +39,8 @@ func main() {
 		c.JSON(http.StatusOK, gin.H{"event": event})
 	})
 
-	server.Run(":8080")
+	err := server.Run(":8080")
+	if err != nil {
+		panic(err)
+	}
 }
