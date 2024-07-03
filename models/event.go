@@ -2,7 +2,7 @@ package models
 
 import (
 	"database/sql"
-	"go-gin-rest-api/infrastructure"
+	"simple-go-gin-rest-api/infrastructure"
 	"time"
 )
 
@@ -17,6 +17,9 @@ type Event struct {
 
 var insertQuery = `INSERT INTO events (name, description, location, datetime, user_id) VALUES (?, ?, ?, ?, ?)`
 var selectQuery = `SELECT id, name, description, location, datetime, user_id FROM events`
+var selectByIdQuery = `SELECT id, name, description, location, datetime, user_id FROM events WHERE id=?`
+var updateByIdQuery = `UPDATE events SET name=?, description=?, location=?, datetime=? WHERE id=?`
+var deleteByIdQuery = `DELETE FROM events WHERE id=?`
 
 func (event *Event) Save() error {
 	stmt, err := infrastructure.DB.Prepare(insertQuery)
@@ -66,4 +69,45 @@ func GetAllEvents() ([]Event, error) {
 	}
 
 	return events, nil
+}
+
+func GetById(id int64) (*Event, error) {
+	row := infrastructure.DB.QueryRow(selectByIdQuery, id)
+
+	var event Event
+	err := row.Scan(&event.Id, &event.Name, &event.Description, &event.Location, &event.DateTime, &event.UserId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &event, nil
+}
+
+func UpdateById(id int64, event *Event) (*Event, error) {
+	stmt, err := infrastructure.DB.Prepare(updateByIdQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = stmt.Exec(event.Name, event.Description, event.Location, event.DateTime, id)
+	if err != nil {
+		return nil, err
+	}
+
+	event, err = GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return event, nil
+}
+
+func DeleteEventById(id int64) error {
+	stmt, err := infrastructure.DB.Prepare(deleteByIdQuery)
+	if err != nil {
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+	return err
 }
