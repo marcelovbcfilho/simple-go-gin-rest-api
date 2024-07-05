@@ -1,4 +1,4 @@
-package models
+package event
 
 import (
 	"database/sql"

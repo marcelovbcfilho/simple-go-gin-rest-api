@@ -3,12 +3,12 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"simple-go-gin-rest-api/models"
+	"simple-go-gin-rest-api/models/event"
 	"strconv"
 )
 
 func events(c *gin.Context) {
-	events, err := models.GetAllEvents()
+	events, err := event.GetAllEvents()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -27,7 +27,7 @@ func eventById(c *gin.Context) {
 }
 
 func createEvent(c *gin.Context) {
-	event := new(models.Event)
+	event := new(event.Event)
 	err := c.ShouldBindJSON(&event)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -49,20 +49,20 @@ func updateEvent(c *gin.Context) {
 		return
 	}
 
-	event := new(models.Event)
-	err = c.ShouldBindJSON(&event)
+	e := new(event.Event)
+	err = c.ShouldBindJSON(&e)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	event, err = models.UpdateById(id, event)
+	e, err = event.UpdateById(id, e)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, event)
+	c.JSON(http.StatusOK, e)
 }
 
 func deleteEvent(c *gin.Context) {
@@ -71,7 +71,7 @@ func deleteEvent(c *gin.Context) {
 		return
 	}
 
-	err = models.DeleteEventById(id)
+	err = event.DeleteEventById(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -80,14 +80,14 @@ func deleteEvent(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-func validateEventById(c *gin.Context) (*models.Event, int64, error) {
+func validateEventById(c *gin.Context) (*event.Event, int64, error) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, 0, err
 	}
 
-	event, err := models.GetById(id)
+	event, err := event.GetById(id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return nil, id, err
